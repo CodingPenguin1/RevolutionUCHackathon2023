@@ -1,5 +1,5 @@
 import pyglet
-from objects import Ship, Projectile
+from objects import Ship
 
 
 pyglet.resource.path = ['../Sprites']
@@ -61,7 +61,7 @@ if __name__ == '__main__':
     exhaust_image.anchor_y = exhaust_image.height / 2
 
     ship = Ship(image=ship_image, batch=ship_batch, team=0)
-    ship2 = Ship(image=ship_image, batch=ship_batch, x=300, y=300, team=1)
+    ship2 = Ship(image=ship_image, batch=ship_batch, x=200, y=200, team=1)
     
     game_objects = [ship, ship2]
 

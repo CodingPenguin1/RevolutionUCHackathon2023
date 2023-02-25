@@ -17,8 +17,6 @@ class PhysicalObject(pyglet.sprite.Sprite):
         self.y = y
         self.velocity = velocity
         self.new_objects = []
-        self.reacts_to_bullets = True
-        self.is_bullet = False
 
         self.team = team
         
@@ -52,30 +50,19 @@ class PhysicalObject(pyglet.sprite.Sprite):
         # Friendly fire off
         if (self.team == other_object.team):
             return False
-        # if not self.reacts_to_bullets and other_object.is_bullet:
-        #     return False
-        # if self.is_bullet and not other_object.reacts_to_bullets:
-        #     return False
 
         self_rect = util.define_rect(self.x, self.y, self.image.width, self.image.height, self.rotation)
         obj_rect = util.define_rect(other_object.x, other_object.y, other_object.image.width, other_object.image.height, other_object.rotation)
         collision = util.rects_overlap(self_rect, obj_rect)
-        if collision:
-            print('Collision detected!')
+
         return collision
 
     def handle_collision_with(self, other_object):
         # TODO: this is where we do damage
-        self.dead = True
+        self.die(0)
 
     def die(self, dt):
         self.dead = True
-
-    def handle_collision_with(self, other_object):
-        if other_object.__class__ == self.__class__:
-            self.dead = False
-        else:
-            self.dead = True
 
 
 class Ship(PhysicalObject):
@@ -91,8 +78,6 @@ class Ship(PhysicalObject):
                 'weapons': ['laser'],
                 'bullet_speed': 700.0
             }
-
-        self.reacts_to_bullets = False
         
         # TODO: this whole thing
         self.brain = None
@@ -114,7 +99,7 @@ class Ship(PhysicalObject):
             self.accelerate(dt)
 
     def fire(self):
-        # Calculate projectile position and instantiate
+        # Calculate projectile position, rotation and instantiate
         angle_radians = -radians(self.rotation)
         ship_radius = self.image.width / 2
         bullet_x = self.x + cos(angle_radians) * ship_radius
@@ -168,8 +153,5 @@ class Ship(PhysicalObject):
 class Projectile(PhysicalObject):
     def __init__(self, image, batch, x=0, y=0, team=0):
         super().__init__(image, batch=batch, x=x, y=y, wraps=False, team=team)
-        pyglet.clock.schedule_once(self.die, 0.5)
         
-        self.is_bullet = True
-        self.reacts_to_bullets = False
         self.scale = 0.5

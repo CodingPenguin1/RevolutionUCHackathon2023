@@ -73,6 +73,8 @@ def rects_overlap(rect1, rect2):
 def define_rect(center_x, center_y, width, height, angle):
     # Takes in sprite bounding box info and returns a list of rotated rectangle verticies
     angle = -math.radians(angle)
+    width = int(0.5 * width)
+    height = int(0.5 * height)
     
     verticies = []
     x1 = center_x + ((width / 2) * math.cos(angle)) - ((height / 2) * math.sin(angle))
