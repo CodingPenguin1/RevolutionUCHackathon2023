@@ -126,10 +126,10 @@ class Menu(object):
 def mainMenu(window):
     menu = Menu(window.width, window.height)
 
-    menu.addTitle("TitleWidget", pyglet.resource.image("ship2.png"), window.width / 2, window.height / 1.5)
+    menu.addTitle("TitleWidget", pyglet.resource.image("UI/Title.png"), window.width / 2, window.height / 1.5)
 
-    menu.addCenterButton("PlayButton", pyglet.resource.image("UI/Play.PNG"), PlayGame, 15)
-    menu.addButton("QuitButton", pyglet.resource.image("UI/Play.PNG"), window.width / 2, window.height / 3, QuitGame)
+    menu.addCenterButton("PlayButton", pyglet.resource.image("UI/Play.png"), PlayGame, 15)
+    menu.addButton("QuitButton", pyglet.resource.image("UI/Quit.png"), window.width / 2, window.height / 3, QuitGame)
 
     return menu
 

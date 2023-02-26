@@ -1,3 +1,6 @@
+import pickle
+
+
 class Network:
     def __init__(self, num_in, num_out):
         self.num_in = num_in
@@ -149,7 +152,7 @@ class Node:
             return inputs[0] - inputs[1]
         elif self.operation == '*':
             return inputs[0] * inputs[1]
-        elif self.operation == '/':
+        elif self.operation == '/': 
             return inputs[0] / inputs[1]
         elif self.operation == 'abs':
             return abs(inputs[0])
@@ -180,21 +183,29 @@ class Node:
         return f'[{self.operation}]: {self.value}'
 
 
+def load_network_from_file(filepath):
+    with open(filepath, 'rb') as f:
+        return pickle.load(f)
+
+
 if __name__ == '__main__':
     # network = Network(2, 1)
     # network.add_node(Node(2, 1, '+'), [0, 1], [2])
     
-    network = Network(2, 4)
-    network.add_node(Node(0, 1, 5))
-    network.add_node(Node(0, 1, 10))
-    network.add_node(Node(1, 1, 'abs'), [1])
-    network.add_node(Node(2, 1, '>'), [8, 7])
-    network.add_node(Node(2, 1, '<='), [6, 0])
-    network.add_node(Node(2, 1, 'and'), [9, 10], [5])
-    network.add_node(Node(0, 1, -10))
-    network.add_node(Node(2, 1, '<'), [1, 12], [3])
-    network.add_node(Node(2, 1, '>'), [1, 7], [2])
+    # network = Network(2, 4)
+    # network.add_node(Node(0, 1, 5))
+    # network.add_node(Node(0, 1, 10))
+    # network.add_node(Node(1, 1, 'abs'), [1])
+    # network.add_node(Node(2, 1, '>'), [8, 7])
+    # network.add_node(Node(2, 1, '<='), [6, 0])
+    # network.add_node(Node(2, 1, 'and'), [9, 10], [5])
+    # network.add_node(Node(0, 1, -10))
+    # network.add_node(Node(2, 1, '<'), [1, 12], [3])
+    # network.add_node(Node(2, 1, '>'), [1, 7], [2])
     
-    print(network)
+    # print(network)
     # print(network.parse_network([10, 5]))
     # # print(network)
+    
+    network = load_network_from_file('graph.pkl')
+    print(network)

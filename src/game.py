@@ -5,7 +5,7 @@ import menu as menuUI
 pyglet.resource.path = ['../Sprites']
 pyglet.resource.reindex()
 
-window = pyglet.window.Window(1280, 720, resizable=True)
+window = pyglet.window.Window(1690, 950, resizable=True)
 window.set_minimum_size(640, 360)
 #window.set_maximum_size(1000, 1000)
 
@@ -126,7 +126,7 @@ if __name__ == '__main__':
     exhaust_image.anchor_y = exhaust_image.height / 2
 
     ship = Ship(name='billy bob', image=ship_image, batch=ship_batch, x=1, y=1, team=0)
-    ship2 = Ship(name='wallhacks', image=ship_image, batch=ship_batch, x=200, y=200, team=1)
+    ship2 = Ship(name='wallhacks', image=ship_image, batch=ship_batch, x=200, y=200, team=1, ai_filepath='graph.pkl')
     
     game_objects = [ship, ship2]
 

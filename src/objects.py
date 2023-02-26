@@ -3,7 +3,7 @@ from pyglet.window import key
 
 from math import sin, cos, radians, degrees
 
-from network import Network, Node
+from network import Network, Node, load_network_from_file
 import util
 
 
@@ -35,8 +35,8 @@ class PhysicalObject(pyglet.sprite.Sprite):
     def check_bounds(self):
         min_x = -self.image.width / 2
         min_y = -self.image.height / 2
-        max_x = 1280 + self.image.width / 2
-        max_y = 720 + self.image.height / 2
+        max_x = 1690 + self.image.width / 2
+        max_y = 950 + self.image.height / 2
         if self.x < min_x:
             if (not self.wraps):
                 self.die(0)
@@ -74,7 +74,7 @@ class PhysicalObject(pyglet.sprite.Sprite):
 
 
 class Ship(PhysicalObject):
-    def __init__(self, name, image, batch, x=0, y=0, ship_properties=None, team=0):
+    def __init__(self, name, image, batch, x=0, y=0, ship_properties=None, team=0, ai_filepath=None):
         super().__init__(image, batch=batch, x=x, y=y, wraps=True, team=team)
         # Properties of the ship
         self.name = name
@@ -88,16 +88,19 @@ class Ship(PhysicalObject):
                 'fire_rate': 25,  # How many physics updates between shots
             }
         
-        self.brain = Network(2, 4)  # (distance, angle), (right, left, thrust, fire)
-        self.brain.add_node(Node(0, 1, 5))
-        self.brain.add_node(Node(0, 1, 1))
-        self.brain.add_node(Node(1, 1, 'abs'), [1])
-        self.brain.add_node(Node(2, 1, '>'), [8, 7])
-        self.brain.add_node(Node(2, 1, '>='), [6, 0])
-        self.brain.add_node(Node(2, 1, 'and'), [9, 10], [5])
-        self.brain.add_node(Node(0, 1, -1))
-        self.brain.add_node(Node(2, 1, '<'), [1, 12], [3])
-        self.brain.add_node(Node(2, 1, '>'), [1, 7], [2])
+        if ai_filepath is not None:
+            self.brain = load_network_from_file(ai_filepath)
+        else:
+            self.brain = Network(2, 4)  # (distance, angle), (right, left, thrust, fire)
+            # self.brain.add_node(Node(0, 1, 5))
+            # self.brain.add_node(Node(0, 1, 1))
+            # self.brain.add_node(Node(1, 1, 'abs'), [1])
+            # self.brain.add_node(Node(2, 1, '>'), [8, 7])
+            # self.brain.add_node(Node(2, 1, '>='), [6, 0])
+            # self.brain.add_node(Node(2, 1, 'and'), [9, 10], [5])
+            # self.brain.add_node(Node(0, 1, -1))
+            # self.brain.add_node(Node(2, 1, '<'), [1, 12], [3])
+            # self.brain.add_node(Node(2, 1, '>'), [1, 7], [2])
         
         self.object_locations = []  # The data of all objects {type, x, y, rotation, velocity}
         
