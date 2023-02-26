@@ -225,7 +225,7 @@ def on_mouse_motion(x, y, dx, dy):
     for obj in network_modules:
         hovering, _ = is_hovering_over(obj, x, y)
         if hovering:
-            if obj.operation == 'const' or type(obj.operation) == int:
+            if obj.operation == 'const' or type(obj.operation) == int or type(obj.operation) == float:
                 hovering_for_text = obj
             else:
                 hovering_for_text = None
@@ -245,8 +245,8 @@ def on_text(text):
         if hovering_for_text.label.text == 'const':
             hovering_for_text.label.text = ''
         hovering_for_text.label.text = str(hovering_for_text.label.text) + text
-        network.nodes[hovering_for_text.node_id].value = int(hovering_for_text.label.text)
-        print(f'Set node {hovering_for_text.node_id} to {int(hovering_for_text.label.text)}')
+        network.nodes[hovering_for_text.node_id].value = float(hovering_for_text.label.text)
+        print(f'Set node {hovering_for_text.node_id} to {float(hovering_for_text.label.text)}')
 
 
 @window.event
@@ -290,31 +290,7 @@ def on_draw():
     
     if hovering_line is not None:
         hovering_line.draw()
-    
-    # lines = []
-    # for root_id in network.graph:
-    #     if len(network.graph[root_id]) > 0:
-    #         for child_id in network.graph[root_id]:
-    #             root_module = network_modules[int(root_id)]
-    #             child_module = network_modules[int(child_id)]
-    #             #print(root_id, child_id)
-    #             #print(child_module.num_in)
-                
-    #             # Get list of all ids pointing to child
-    #             parent_ids = [id_ for id_ in network.graph if child_id in network.graph[id_]]
-    #             input_idx = parent_ids.index(root_id)
-                
-    #             if child_module.num_in == 1:
-    #                 #print('adding line')
-    #                 lines.append(pyglet.shapes.Line(root_module.x + root_module.width / 2 - 5, root_module.y, child_module.x - child_module.width / 2 + 5, child_module.y, 5, color = (50, 225, 30)))
-
-    #             elif child_module.num_in == 2:
-    #                 for i in range(child_module.num_in):
-    #                     if i == input_idx:
-    #                         lines.append(pyglet.shapes.Line(root_module.x + root_module.width / 2 - 5, root_module.y, child_module.x - child_module.width / 2 + 5, child_module.y + child_module.height / 6, 5, color = (50, 225, 30)))
-    #                     else:
-    #                         lines.append(pyglet.shapes.Line(root_module.x + root_module.width / 2 - 5, root_module.y, child_module.x - child_module.width / 2 + 5, child_module.y - child_module.height / 6, 5, color = (50, 225, 30)))
-    
+  
     #print('len lines', len(lines))
     for line in lines:
         # line.opacity = 250

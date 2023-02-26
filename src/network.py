@@ -103,14 +103,7 @@ class Network:
                     self._parse_network_helper(i)
                 inbound_nodes.append(i)
                 
-        # if node_idx == 9:
-        #     print(f'NODES INBOUND TO 9: {inbound_nodes}')
         inputs = [self.nodes[i].value for i in inbound_nodes]
-        
-        # if len(inputs) == 2:
-        #     print(f'{node_idx}: {inputs[0]} {self.nodes[node_idx].operation} {inputs[1]} = {self.nodes[node_idx].perform_operation(inputs)}')
-        # elif len(inputs) == 1:
-        #     print(f'{node_idx}: {inputs[0]} {self.nodes[node_idx].operation} = {self.nodes[node_idx].perform_operation(inputs)}')
         
         if len(inputs) > 0:
             self.nodes[node_idx].value = self.nodes[node_idx].perform_operation(inputs)
@@ -135,7 +128,7 @@ class Node:
         self.num_outputs = num_outputs
         self.operation = operation
         self.value = None
-        if type(self.operation) == int:
+        if type(self.operation) == int or type(self.operation) == float:
             self.value = self.operation
             self.operation = 'const'
     

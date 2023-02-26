@@ -3,9 +3,6 @@ import pyglet
 pyglet.resource.path = ['../Sprites']
 pyglet.resource.reindex()
 
-# window = pyglet.window.Window(1280, 720, resizable=True)
-# window.set_minimum_size(640, 360)
-
 class Image(object):
     def __init__(self, name, image, xPos, yPos, batch, animation=None):
         self.name = name
@@ -64,10 +61,7 @@ class Button(Image):
 
 
 def PlayGame():
-    print("PLAYING GAME")
     return False
-    #window.clear()
-    #game.manualRun(window)
 
 def QuitGame():
     print("QUITTING")
@@ -132,30 +126,3 @@ def mainMenu(window):
     menu.addButton("QuitButton", pyglet.resource.image("UI/Quit.png"), window.width / 2, window.height / 3, QuitGame)
 
     return menu
-
-# menu = mainMenu()
-# inMenu = True
-
-# @window.event
-# def on_draw():
-#     if (inMenu):
-#         window.clear()
-#         menu.redraw()
-#     else:
-#         window.clear()
-        #game.ship_batch.draw()
-    #button1 = pyglet.gui.widgets.PushButton(window.width / 2, window.height / 2, pyglet.resource.image("UI/Play.PNG"), pyglet.resource.image("ship2.png"))
-
-# @window.event
-# def on_mouse_press(x, y, button, modifiers):
-#     menuButtons = menu.getButtons()
-#     for button in menuButtons:
-#         spriteX = button.getX()
-#         spriteY = button.getY()
-#         image_width = button.getWidth()
-#         image_height = button.getHeight()
-#         if spriteX + image_width > x and spriteY + image_height > y and spriteX - image_width < x and spriteY - image_height < y:
-#             button.trigger()
-
-# if __name__ == '__main__':
-#     pyglet.app.run()

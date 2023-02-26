@@ -86,7 +86,10 @@ class Ship(PhysicalObject):
                 'weapons': ['laser'],
                 'bullet_speed': 700.0,
                 'fire_rate': 25,  # How many physics updates between shots
+                'bullet_image_file': "blueShot.png"
             }
+        else:
+            self.ship_properties = ship_properties
         
         if ai_filepath is not None:
             self.brain = load_network_from_file(ai_filepath)
@@ -143,7 +146,7 @@ class Ship(PhysicalObject):
                         test_angle = degrees(util.angle(heading_vector, position_vector)) % 360
                         
                         # If the test angle is less than the actual angle, then the enemy is on the left
-                        if test_angle < angle:
+                        if test_angle > angle:
                             angle = -angle
                         
                         # Distance between me and the enemy ship
@@ -152,10 +155,8 @@ class Ship(PhysicalObject):
             
             # Use brain to get outputs
             self.brain.reset()
-            print('INPUT', inputs)
             if len(inputs) > 0:
                 outputs = self.brain.parse_network(inputs)  # right, left, thrust, fire
-                print('OUTPUT', outputs)
                 
                 # Parse outputs into "keystrokes"
                 self.ai_actions['right'] = bool(outputs[0])
@@ -187,7 +188,7 @@ class Ship(PhysicalObject):
         ship_radius = self.image.width / 2
         bullet_x = self.x + cos(angle_radians) * ship_radius
         bullet_y = self.y + sin(angle_radians) * ship_radius
-        bullet_image = pyglet.resource.image("ShotRegular/blueShot.png")
+        bullet_image = pyglet.resource.image("ShotRegular/" + self.ship_properties['bullet_image_file'])
         new_bullet = Projectile(image=bullet_image, batch=self.batch, x=bullet_x, y=bullet_y, team=team)
         new_bullet.rotation = self.rotation
 

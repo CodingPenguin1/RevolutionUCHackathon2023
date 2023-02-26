@@ -7,7 +7,6 @@ pyglet.resource.reindex()
 
 window = pyglet.window.Window(1690, 950, resizable=True)
 window.set_minimum_size(640, 360)
-#window.set_maximum_size(1000, 1000)
 
 game_objects = []
 to_add = []
@@ -15,26 +14,7 @@ ship_batch = pyglet.graphics.Batch()
 
 menu = menuUI.mainMenu(window)
 inMenu = True
-# started = False
-# ship = None
 
-# def startGame():
-#     ship_image = pyglet.resource.image("ship2.png")
-#     bullet_image = pyglet.resource.image("ShotRegular/blueShot.png")  # TODO: Load all sprites at launch
-#     exhaust_image = pyglet.resource.image("Exhaust/exhaust4.png")
-
-#     exhaust_image.anchor_x = exhaust_image.width * 1.5
-#     exhaust_image.anchor_y = exhaust_image.height / 2
-
-#     global ship
-#     ship = Ship(image=ship_image, batch=ship_batch, team=0)
-#     ship2 = Ship(image=ship_image, batch=ship_batch, x=200, y=200, team=1)    
-    
-#     game_objects = [ship, ship2]
-
-#     window.push_handlers(ship)
-
-#     # pyglet.clock.schedule_interval(update(), 1/120.0)
 
 @window.event
 def on_draw():
@@ -43,7 +23,32 @@ def on_draw():
         menu.redraw()
     else:
         window.clear()
+        background = pyglet.sprite.Sprite(x=0, y=0, img=pyglet.resource.image("UI/background.png"))
+        background.update(scale=1.5)
+        background.draw()
         ship_batch.draw()
+
+    if (ship.dead):
+        deadText = pyglet.text.Label('You Died',
+                font_name='Times New Roman',
+                font_size=36,
+                x=window.width//2, y=window.height//2,
+                anchor_x='center', anchor_y='center')
+        deadText.draw()
+        pyglet.clock.schedule_once(QuitGame, 5)
+
+    if (ship2.dead):
+        winText = pyglet.text.Label('You Win',
+                font_name='Times New Roman',
+                font_size=36,
+                x=window.width//2, y=window.height//2,
+                anchor_x='center', anchor_y='center')
+        winText.draw()
+        pyglet.clock.schedule_once(QuitGame, 5)
+
+def QuitGame():
+    print("QUITTING")
+    pyglet.app.exit()
 
 @window.event
 def on_mouse_press(x, y, button, modifiers):
@@ -57,17 +62,9 @@ def on_mouse_press(x, y, button, modifiers):
             global inMenu
             inMenu = button.trigger()
 
-# @window.event
-# def on_draw():
-#     window.clear()
-#     ship_batch.draw()
 
 def update(dt):
     global inMenu #, started
-    # if (not started and not inMenu):
-    #     print('s')
-    #     #startGame()
-    #     started = True
 
     if (not inMenu):
         # Remove dead objects
@@ -107,11 +104,6 @@ def update(dt):
                         obj_1.handle_collision_with(obj_2)
                         obj_2.handle_collision_with(obj_1)
 
-        # TODO: If player ship dies, display death UI and disable input
-        if (ship.dead):
-            print("YOU DIED")
-            pyglet.app.exit()
-
         # Last
         game_objects.extend(to_add)
         to_add.clear()
@@ -119,44 +111,26 @@ def update(dt):
 
 if __name__ == '__main__':
     ship_image = pyglet.resource.image("ship2.png")
-    bullet_image = pyglet.resource.image("ShotRegular/blueShot.png")  # TODO: Load all sprites at launch
-    exhaust_image = pyglet.resource.image("Exhaust/exhaust4.png")
+    ai_ship_image = pyglet.resource.image("ship3.png")
 
-    exhaust_image.anchor_x = exhaust_image.width * 1.5
-    exhaust_image.anchor_y = exhaust_image.height / 2
+    ship = Ship(name='billy bob', image=ship_image, batch=ship_batch, x=200, y=450, team=0)
 
-    ship = Ship(name='billy bob', image=ship_image, batch=ship_batch, x=1, y=1, team=0)
-    ship2 = Ship(name='wallhacks', image=ship_image, batch=ship_batch, x=200, y=200, team=1, ai_filepath='graph.pkl')
+    ai_ship_properties = {
+            'thrust': 100,
+            'max_speed': 10,
+            'turn_speed': 50,
+            'weapons': ['laser'],
+            'bullet_speed': 700.0,
+            'fire_rate': 25,  # How many physics updates between shots
+            'bullet_image_file': "redShot.png"
+    }
+
+    ship2 = Ship(name='wallhacks', image=ai_ship_image, batch=ship_batch, x=1400, y=550, team=1, ai_filepath='graph.pkl', ship_properties=ai_ship_properties)
     
     game_objects = [ship, ship2]
 
     window.push_handlers(ship)
 
-    # background = pyglet.image.load('../Sprites/UI/background.png')
-    # background.blit(0,0,0)
-
-    # if (not started and not inMenu):
-    #     print('s')
-    #     startGame()
-
     pyglet.clock.schedule_interval(update, 1/120.0)
     
     pyglet.app.run()
-
-# def manualRun(window):
-#     ship_image = pyglet.resource.image("ship2.png")
-#     bullet_image = pyglet.resource.image("ShotRegular/blueShot.png")  # TODO: Load all sprites at launch
-#     exhaust_image = pyglet.resource.image("Exhaust/exhaust4.png")
-
-#     exhaust_image.anchor_x = exhaust_image.width * 1.5
-#     exhaust_image.anchor_y = exhaust_image.height / 2
-
-#     global ship
-#     ship = Ship(image=ship_image, batch=ship_batch, team=0)
-#     ship2 = Ship(image=ship_image, batch=ship_batch, x=200, y=200, team=1)
-    
-#     game_objects = [ship, ship2]
-
-#     window.push_handlers(ship)
-
-#     pyglet.clock.schedule_interval(update, 1/120.0)
