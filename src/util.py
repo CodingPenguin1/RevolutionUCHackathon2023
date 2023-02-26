@@ -1,12 +1,23 @@
 import math
 import numpy as np
-import itertools
 
 
 def distance(point_1=(0, 0), point_2=(0, 0)):
     return math.sqrt(
         (point_1[0] - point_2[0]) ** 2 +
         (point_1[1] - point_2[1]) ** 2)
+
+
+def dotproduct(v1, v2):
+    return sum((a * b) for a, b in zip(v1, v2))
+
+
+def length(v):
+    return math.sqrt(dotproduct(v, v))
+
+
+def angle(v1, v2):
+    return math.acos(dotproduct(v1, v2) / (length(v1) * length(v2)))
 
 
 def on_segment(p1, p2, p):

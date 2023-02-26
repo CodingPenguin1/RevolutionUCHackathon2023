@@ -1,8 +1,9 @@
 import pyglet
 from pyglet.window import key
 
-from math import sin, cos, radians
+from math import sin, cos, radians, degrees
 
+from network import Network, Node
 import util
 
 
@@ -29,8 +30,7 @@ class PhysicalObject(pyglet.sprite.Sprite):
         self.x += self.velocity[0] * dt
         self.y += self.velocity[1] * dt
         
-        if (self.wraps):
-            self.check_bounds()
+        self.check_bounds()
 
     def check_bounds(self):
         min_x = -self.image.width / 2
@@ -38,12 +38,20 @@ class PhysicalObject(pyglet.sprite.Sprite):
         max_x = 1280 + self.image.width / 2
         max_y = 720 + self.image.height / 2
         if self.x < min_x:
+            if (not self.wraps):
+                self.die(0)
             self.x = max_x
         elif self.x > max_x:
+            if (not self.wraps):
+                self.die(0)
             self.x = min_x
         if self.y < min_y:
+            if (not self.wraps):
+                self.die(0)
             self.y = max_y
         elif self.y > max_y:
+            if (not self.wraps):
+                self.die(0)
             self.y = min_y
     
     def collides_with(self, other_object):
@@ -66,46 +74,118 @@ class PhysicalObject(pyglet.sprite.Sprite):
 
 
 class Ship(PhysicalObject):
-    def __init__(self, image, batch, x=0, y=0, ship_properties=None, team=0):
+    def __init__(self, name, image, batch, x=0, y=0, ship_properties=None, team=0):
         super().__init__(image, batch=batch, x=x, y=y, wraps=True, team=team)
-        
         # Properties of the ship
+        self.name = name
         if ship_properties is None:
             self.ship_properties = {
                 'thrust': 100,
                 'max_speed': 10,
                 'turn_speed': 50,
                 'weapons': ['laser'],
-                'bullet_speed': 700.0
+                'bullet_speed': 700.0,
+                'fire_rate': 25,  # How many physics updates between shots
             }
         
-        # TODO: this whole thing
-        self.brain = None
+        self.brain = Network(2, 4)  # (distance, angle), (right, left, thrust, fire)
+        self.brain.add_node(Node(0, 1, 5))
+        self.brain.add_node(Node(0, 1, 1))
+        self.brain.add_node(Node(1, 1, 'abs'), [1])
+        self.brain.add_node(Node(2, 1, '>'), [8, 7])
+        self.brain.add_node(Node(2, 1, '>='), [6, 0])
+        self.brain.add_node(Node(2, 1, 'and'), [9, 10], [5])
+        self.brain.add_node(Node(0, 1, -1))
+        self.brain.add_node(Node(2, 1, '<'), [1, 12], [3])
+        self.brain.add_node(Node(2, 1, '>'), [1, 7], [2])
+        
+        self.object_locations = []  # The data of all objects {type, x, y, rotation, velocity}
         
         self.keys = {
                     'left': False,
                     'right': False,
-                    'up': False
+                    'up': False,
+                    'space': False
                     }
+    
+        self.ai_actions = {
+                    'left': False,
+                    'right': False,
+                    'up': False,
+                    'space': False,
+                    'updates_since_last_shot': 0
+        }
 
     def update(self, dt):
+        # Physics update
         super().update(dt)
         
-        if self.keys['left']:
+        # === AI Update ===
+        if self.name == 'wallhacks':
+            # Calculate inputs
+            inputs = []  # Inputs for the network
+            for obj in self.object_locations:
+                if obj['type'] == Ship:
+                    # If ship is not me
+                    if util.distance((self.x, self.y), (obj['x'], obj['y'])) > 2:
+                        # Angle between heading of me and the enemy ship
+                        heading_vector = (-cos(radians(self.rotation)), sin(radians(self.rotation)))
+                        position_vector = (self.x - obj['x'], self.y - obj['y'])
+                        angle = degrees(util.angle(heading_vector, position_vector)) % 360
+                        
+                        # Check which side the enemy is on by checking rotation - 1 degree
+                        test_rotation = self.rotation - 1
+                        heading_vector = (-cos(radians(test_rotation)), sin(radians(test_rotation)))
+                        position_vector = (self.x - obj['x'], self.y - obj['y'])
+                        test_angle = degrees(util.angle(heading_vector, position_vector)) % 360
+                        
+                        # If the test angle is less than the actual angle, then the enemy is on the left
+                        if test_angle < angle:
+                            angle = -angle
+                        
+                        # Distance between me and the enemy ship
+                        distance = util.distance((self.x, self.y), (obj['x'], obj['y']))
+                        inputs = [distance, angle]
+            
+            # Use brain to get outputs
+            self.brain.reset()
+            print('INPUT', inputs)
+            if len(inputs) > 0:
+                outputs = self.brain.parse_network(inputs)  # right, left, thrust, fire
+                print('OUTPUT', outputs)
+                
+                # Parse outputs into "keystrokes"
+                self.ai_actions['right'] = bool(outputs[0])
+                self.ai_actions['left'] = bool(outputs[1])
+                self.ai_actions['up'] = bool(outputs[2])
+                self.ai_actions['space'] = bool(outputs[3])
+        
+        # === Perform Actions ===
+        if self.keys['left'] or self.ai_actions['left']:
             self.turn('left', dt)
-        elif self.keys['right']:
+        if self.keys['right'] or self.ai_actions['right']:
             self.turn('right', dt)
-        elif self.keys['up']:
+        if self.keys['up'] or self.ai_actions['up']:
             self.accelerate(dt)
+        if self.keys['space']:
+            self.fire(self.team)
+            self.keys['space'] = False
 
-    def fire(self):
+        # If AI attempts to fire and can fire
+        if self.ai_actions['space'] and self.ai_actions['updates_since_last_shot'] > self.ship_properties['fire_rate']:
+            self.fire(self.team)
+            self.ai_actions['updates_since_last_shot'] = 0
+        else:
+            self.ai_actions['updates_since_last_shot'] += 1
+
+    def fire(self, team=0):
         # Calculate projectile position, rotation and instantiate
         angle_radians = -radians(self.rotation)
         ship_radius = self.image.width / 2
         bullet_x = self.x + cos(angle_radians) * ship_radius
         bullet_y = self.y + sin(angle_radians) * ship_radius
         bullet_image = pyglet.resource.image("ShotRegular/blueShot.png")
-        new_bullet = Projectile(image=bullet_image, batch=self.batch, x=bullet_x, y=bullet_y, team=0)
+        new_bullet = Projectile(image=bullet_image, batch=self.batch, x=bullet_x, y=bullet_y, team=team)
         new_bullet.rotation = self.rotation
 
         # Set projectile velocity
@@ -139,7 +219,7 @@ class Ship(PhysicalObject):
         elif symbol == key.RIGHT:
             self.keys['right'] = True
         elif symbol == key.SPACE:
-            self.fire()
+            self.keys['space'] = True
 
     def on_key_release(self, symbol, modifiers):
         if symbol == key.UP:
@@ -148,6 +228,8 @@ class Ship(PhysicalObject):
             self.keys['left'] = False
         elif symbol == key.RIGHT:
             self.keys['right'] = False
+        elif symbol == key.SPACE:
+            self.keys['space'] = False
 
 
 class Projectile(PhysicalObject):
